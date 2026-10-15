@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#3B3FF2">
+<title>Профессия в туризме</title>
+<meta name="description" content="Пройдите квиз за 1 минуту и узнайте, какой курс в туризме подходит именно вам.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: one centred phone-width column; a question card on a brand-blue ground, progress on top, sticky actions below. Single committed brand look. */
+:root{
+  --ground:#3B3FF2; --ground-deep:#2A2DC4; --ink:#14163A; --ink-soft:#4A4D6E;
+  --card:#FFFFFF; --tint:#EDEEFF; --line:#D6D7FA;
+  --sun:#FFD43B; --rose:#E8378F; --on-ground:#FFFFFF; --on-ground-soft:#DADBFB;
+  --display:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--ground);color:var(--on-ground);font-family:var(--display);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.logo{border:3px solid var(--on-ground);font-weight:800;font-size:15px;padding:1px 6px;line-height:1.1}
+.step{font-size:14px;color:var(--on-ground-soft);font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:99px;background:var(--ground-deep);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--sun);border-radius:99px;transition:width .35s ease}
+h1{font-size:clamp(30px,8vw,44px);line-height:1.05;letter-spacing:-.02em;font-weight:800;margin:6px 0 0;text-wrap:balance}
+h1 mark{background:var(--sun);color:var(--ground-deep);padding:0 .18em;border-radius:.18em}
+h2{font-size:clamp(23px,6vw,30px);line-height:1.15;font-weight:800;margin:0;text-wrap:balance}
+.lead{font-size:17px;color:var(--on-ground-soft);margin:0;max-width:46ch}
+.perks{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.perks li{border:2px solid rgba(255,255,255,.45);border-radius:99px;padding:6px 14px;font-size:14px;font-weight:700}
+.card{background:var(--card);color:var(--ink);border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.hint{font-size:14px;color:var(--ink-soft);margin:-4px 0 0}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;min-height:58px;padding:14px 16px;border:2px solid var(--line);border-radius:18px;cursor:pointer;font-size:17px;font-weight:500;color:var(--ink);background:var(--card);transition:border-color .15s,background .15s,transform .1s}
+.opt:hover{border-color:var(--ground)}
+.opt:active{transform:scale(.99)}
+.opt:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--ground);background:var(--tint)}
+.opt .k{flex:none;width:34px;height:34px;border-radius:11px;background:var(--tint);color:var(--ground);display:grid;place-items:center;font-weight:800;font-size:15px}
+.opt[aria-pressed="true"] .k{background:var(--ground);color:#fff}
+.btn{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:14px 26px;border-radius:99px;font-weight:800;font-size:17px;cursor:pointer;text-align:center}
+.btn:focus-visible{outline:3px solid var(--rose);outline-offset:3px}
+.btn-sun{background:var(--sun);color:var(--ink)}
+.btn-ink{background:var(--ground);color:#fff}
+.btn-ghost{color:var(--on-ground);border:2px solid rgba(255,255,255,.5)}
+.btn-line{color:var(--ground);border:2px solid var(--line)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row .btn{flex:1 1 180px}
+.back{all:unset;cursor:pointer;color:var(--on-ground-soft);font-size:15px;font-weight:500;align-self:flex-start;padding:6px 2px}
+.back:focus-visible{outline:2px solid var(--sun)}
+.tag{align-self:flex-start;background:var(--rose);color:#fff;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:99px}
+.result-name{font-size:clamp(28px,7vw,36px);font-weight:800;line-height:1.05;color:var(--ground)}
+.why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.why li{display:flex;gap:10px;align-items:flex-start;font-size:16px}
+.why li::before{content:"";flex:none;width:20px;height:20px;margin-top:2px;border-radius:6px;background:var(--sun) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314163A' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/14px no-repeat}
+label{font-weight:700;font-size:15px}
+.field{display:flex;flex-direction:column;gap:6px}
+input[type=text],input[type=tel]{font:inherit;font-size:17px;padding:14px 16px;border:2px solid var(--line);border-radius:16px;color:var(--ink);background:var(--card);width:100%}
+input[type=text]:focus,input[type=tel]:focus{outline:none;border-color:var(--ground)}
+input[aria-invalid="true"],input[aria-invalid="true"]:focus{border-color:var(--rose)}
+.opt-t{display:flex;flex-direction:column;gap:2px}
+.opt-sub{font-size:14px;color:var(--ink-soft);font-weight:400}
+.choice{display:flex;flex-direction:column;gap:12px}
+.choice .btn{width:100%}
+.opt-label{font-weight:400;color:var(--ink-soft);font-size:14px}
+.err{font-size:14px;color:#C2185B;font-weight:700;margin:0;min-height:1.2em}
+.summary{background:var(--tint);border-radius:16px;padding:14px 16px;font-size:14px;color:var(--ink-soft);white-space:pre-line}
+.small{font-size:13px;color:var(--ink-soft);margin:0}
+.phone{font-weight:800;color:var(--ink);user-select:all}
+.toast{font-size:14px;color:var(--ground);font-weight:700;min-height:1.2em;margin:0}
+.btn-send{width:100%;font-size:18px;min-height:60px}
+/* Intro fills the phone screen; the two choices sit in the thumb zone */
+.wrap[data-screen="intro"]{min-height:calc(100dvh - 52px)}
+.wrap[data-screen="intro"] .choice{margin-top:auto;padding-top:12px}
+input{-webkit-appearance:none;appearance:none}
+@media (max-width:480px){
+  body{padding-block:14px 20px;font-size:15px}
+  .wrap{gap:14px}
+  .wrap[data-screen="intro"]{min-height:calc(100dvh - 34px)}
+  h1{font-size:34px}
+  h2{font-size:22px}
+  .lead{font-size:16px}
+  .perks li{font-size:13px;padding:5px 12px}
+  .card{padding:18px;border-radius:22px;gap:12px}
+  .opt{font-size:16px;min-height:56px;padding:12px 14px;gap:12px;border-radius:16px}
+  .opt .k{width:30px;height:30px;font-size:14px}
+  .opt-sub{font-size:13px}
+  .btn{width:100%;min-height:56px;font-size:17px}
+  .result-name{font-size:28px}
+  .why li{font-size:15px}
+  input[type=text],input[type=tel]{font-size:16px;padding:13px 14px}
+}
+@media (max-width:360px){
+  h1{font-size:29px}
+  .card{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>[hidden]{display:none!important} img{max-width:100%} body{margin:0;padding-top:max(20px,env(safe-area-inset-top,0px))}</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app" aria-live="polite"></div>
+
+<script>
+/* ===== НАСТРОЙКИ: поменяйте под себя ===== */
+const CONFIG = {
+  brand: "Travel Skills",
+  whatsapp: "998880424004",          // номер для WhatsApp, только цифры
+  telegram: "",                       // username в Telegram без @, например "travelskills_uz"; пусто = кнопка скрыта
+  phoneShown: "+998 88 042 40 04"
+};
+
+const COURSES = {
+  agent: {name:"Турагент с нуля", why:["Учим с нуля, опыт не нужен","17 систем бронирования на практике","Стажировка в офисах"]},
+  hm:    {name:"Hotel Management с нуля", why:["Как устроен отель изнутри: все службы","Стандарты сервиса и работа с гостями","Бесплатный пробный урок в действующем потоке"]},
+  sales: {name:"Секреты продаж в туризме", why:["Скрипты первого ответа и работа с «дорого»","Как доводить заявку до оплаты","Больше клиентов, выше продажи, довольные туристы"]},
+  dom:   {name:"Внутренний туризм", why:["Маршруты по Узбекистану","Расчёт себестоимости и наценки","Продажа туров местным и иностранным туристам"]}
+};
+
+const QUESTIONS = [
+  {id:"interest", q:"Что вам ближе всего?", hint:"Выберите один вариант", opts:[
+    {t:"Гостеприимство, отели, работа с гостями", s:{hm:3}},
+    {t:"Путешествия и подбор туров за границу", s:{agent:3}},
+    {t:"Продажи, переговоры, клиенты", s:{sales:3}},
+    {t:"Узбекистан: города, история, экскурсии", s:{dom:3}}
+  ]},
+  {id:"exp", q:"Какой у вас опыт в туризме?", opts:[
+    {t:"Никакого, хочу начать с нуля", s:{agent:1,hm:1,dom:1}},
+    {t:"Работаю турагентом или менеджером", s:{sales:2}},
+    {t:"Владею агентством или руковожу командой", s:{sales:2,dom:1}},
+    {t:"Гид, гостевой дом или отель", s:{dom:2,hm:1}}
+  ]},
+  {id:"goal", q:"Чего хотите добиться?", opts:[
+    {t:"Освоить новую профессию", s:{agent:1,hm:1}},
+    {t:"Больше продаж и клиентов", s:{sales:2}},
+    {t:"Запустить своё направление или туры", s:{dom:2}},
+    {t:"Пока просто изучаю варианты", s:{}}
+  ]},
+  {id:"start", q:"Когда готовы начать обучение?", hint:"Так мы подберём ближайшую группу", opts:[
+    {t:"В ближайший месяц", s:{}, hot:2},
+    {t:"Через 1–3 месяца", s:{}, hot:1},
+    {t:"Пока не знаю", s:{}, hot:0}
+  ]},
+  {id:"time", q:"Какое время занятий удобнее?", opts:[
+    {t:"Утро, 10:00–13:00", s:{}},
+    {t:"День, 14:00–17:00", s:{}},
+    {t:"Обсужу с менеджером", s:{}}
+  ]}
+];
+
+let state = {screen:"intro", flow:[], pos:0, answers:{}, picked:null, name:"", phone:"", tg:""};
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const COURSE_KEYS = ["agent","hm","sales","dom"];
+const COURSE_SUB = {agent:"Подбор и продажа туров, 17 систем бронирования", hm:"Работа в отелях: службы, сервис, гости", sales:"Для турагентов и владельцев агентств", dom:"Туры по Узбекистану"};
+
+function headerBar(stepText, pct){
+  return `<div class="top"><div class="brand">${esc(CONFIG.brand)}</div><div class="step">${stepText}</div></div>
+  <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>`;
+}
+
+function totalSteps(){ return state.flow.length + (state.picked ? 1 : 0); }
+function stepNo(){ return state.pos + 1 + (state.picked ? 1 : 0); }
+
+function score(){
+  if(state.picked) return state.picked;
+  const t = {agent:0,hm:0,sales:0,dom:0};
+  for(const qi in state.answers){ const o = QUESTIONS[qi].opts[state.answers[qi]]; if(o) for(const k in o.s) t[k]+=o.s[k]; }
+  const first = Object.keys(QUESTIONS[0].opts[state.answers[0]].s)[0];
+  let best = first, max = -1;
+  for(const k of [first,...COURSE_KEYS]) if(t[k]>max){max=t[k];best=k;}
+  return best;
+}
+function heat(){ const o = QUESTIONS[3].opts[state.answers[3]]; return o ? o.hot : 0; }
+
+function cleanPhone(p){ return p.replace(/[^\d+]/g,""); }
+function phoneOk(){ return cleanPhone(state.phone).replace(/\D/g,"").length >= 9; }
+function tgClean(){ const t = state.tg.trim().replace(/^https?:\/\/t\.me\//i,"").replace(/^@/,""); return t ? "@"+t : ""; }
+
+function message(courseKey){
+  const lines = [
+    "Здравствуйте! Я прошёл(ла) квиз на сайте.",
+    "Имя: " + (state.name.trim() || "—"),
+    "Телефон: " + (state.phone.trim() || "—"),
+    "Telegram: " + (tgClean() || "—"),
+    (state.picked ? "Выбранный курс: " : "Подходящий курс: ") + COURSES[courseKey].name
+  ];
+  for(const qi of state.flow) lines.push(QUESTIONS[qi].q.replace("?","") + ": " + QUESTIONS[qi].opts[state.answers[qi]].t);
+  lines.push("Хочу узнать стоимость и ближайшую группу.");
+  return lines.join("\n");
+}
+
+function render(){
+  app.dataset.screen = state.screen;
+  if(state.screen==="intro"){
+    app.innerHTML = `${headerBar("1 минута", 0)}
+      <h1>Какая профессия в&nbsp;туризме <mark>ваша?</mark></h1>
+      <p class="lead">Подберём курс под ваш опыт и цель и пришлём программу со стоимостью.</p>
+      <ul class="perks"><li>Турагент</li><li>Hotel Management</li><li>Продажи в туризме</li><li>Внутренний туризм</li></ul>
+      <div class="choice">
+        <button class="btn btn-sun" id="dunno" type="button">Не знаю, помогите выбрать</button>
+        <button class="btn btn-ghost" id="know" type="button">Знаю, какой курс хочу</button>
+      </div>`;
+    document.getElementById("dunno").onclick = ()=>{ state.picked=null; state.flow=[0,1,2,3,4]; state.pos=0; state.screen="q"; render(); };
+    document.getElementById("know").onclick = ()=>{ state.screen="pick"; render(); };
+    return;
+  }
+  if(state.screen==="pick"){
+    app.innerHTML = `${headerBar("Шаг 1 из 3", 0)}
+      <button class="back" id="back" type="button">← В начало</button>
+      <div class="card">
+        <h2 id="ph">Какой курс вас интересует?</h2>
+        <div class="opts" role="group" aria-labelledby="ph">
+          ${COURSE_KEYS.map((k,i)=>`<button class="opt" type="button" data-k="${k}" aria-pressed="${state.picked===k}"><span class="k">${String.fromCharCode(1040+i)}</span><span class="opt-t">${esc(COURSES[k].name)}<span class="opt-sub">${esc(COURSE_SUB[k])}</span></span></button>`).join("")}
+        </div>
+      </div>`;
+    app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      state.picked=b.dataset.k; state.flow=[3,4]; state.pos=0;
+      app.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed", x===b));
+      setTimeout(()=>{ state.screen="q"; render(); window.scrollTo(0,0); },220);
+    });
+    document.getElementById("back").onclick=()=>{ state.screen="intro"; render(); };
+    return;
+  }
+  if(state.screen==="q"){
+    const qi = state.flow[state.pos], q = QUESTIONS[qi], n = totalSteps(), s = stepNo();
+    const pct = Math.round((s-1)/n*100);
+    app.innerHTML = `${headerBar(`${state.picked?"Шаг":"Вопрос"} ${s} из ${n}`, pct)}
+      <button class="back" id="back" type="button">← Назад</button>
+      <div class="card">
+        <h2 id="qh">${esc(q.q)}</h2>
+        ${q.hint?`<p class="hint">${esc(q.hint)}</p>`:""}
+        <div class="opts" role="group" aria-labelledby="qh">
+          ${q.opts.map((o,oi)=>`<button class="opt" type="button" data-i="${oi}" aria-pressed="${state.answers[qi]===oi}"><span class="k">${String.fromCharCode(1040+oi)}</span>${esc(o.t)}</button>`).join("")}
+        </div>
+      </div>`;
+    app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      state.answers[qi]=+b.dataset.i;
+      app.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed", x===b));
+      setTimeout(()=>{ if(state.pos<state.flow.length-1){state.pos++;} else {state.screen="result";} render(); window.scrollTo(0,0); },220);
+    });
+    document.getElementById("back").onclick=()=>{
+      if(state.pos>0) state.pos--; else state.screen = state.picked ? "pick" : "intro";
+      render();
+    };
+    const sel = app.querySelector('.opt[aria-pressed="true"]') || app.querySelector(".opt"); sel && sel.focus({preventScroll:true});
+    return;
+  }
+  if(state.screen==="result"){
+    const k = score(), c = COURSES[k], h = heat();
+    const tag = h===2 ? "Подходит ближайшая группа" : h===1 ? "Забронируйте место заранее" : "Начните с консультации";
+    app.innerHTML = `${headerBar("Последний шаг", 100)}
+      <button class="back" id="back" type="button">← Изменить ответы</button>
+      <div class="card">
+        <span class="tag">${tag}</span>
+        <div><p class="small">${state.picked?"Ваш курс":"Вам подходит курс"}</p><div class="result-name">${esc(c.name)}</div></div>
+        <ul class="why">${c.why.map(w=>`<li>${esc(w)}</li>`).join("")}</ul>
+      </div>
+      <form class="card" id="lead" novalidate>
+        <h2>Получите программу и стоимость</h2>
+        <div class="field"><label for="nm">Имя</label><input id="nm" type="text" autocomplete="given-name" placeholder="Ваше имя" value="${esc(state.name)}"></div>
+        <div class="field"><label for="ph">Телефон</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" value="${esc(state.phone)}" required aria-describedby="err"></div>
+        <div class="field"><label for="tgu">Telegram <span class="opt-label">(необязательно)</span></label><input id="tgu" type="text" autocomplete="off" autocapitalize="off" placeholder="@username" value="${esc(state.tg)}"></div>
+        <p class="err" id="err" role="alert"></p>
+        <a class="btn btn-ink btn-send" id="wa" href="#" target="_blank" rel="noopener">Отправить</a>
+      </form>`;
+    const nm = document.getElementById("nm"), ph = document.getElementById("ph"), tgu = document.getElementById("tgu");
+    const wa = document.getElementById("wa"), err = document.getElementById("err");
+    const sync = ()=>{
+      state.name = nm.value; state.phone = ph.value; state.tg = tgu.value;
+      wa.href = "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(message(k));
+      if(phoneOk()){ ph.removeAttribute("aria-invalid"); err.textContent=""; }
+    };
+    const guard = e=>{
+      sync();
+      if(!phoneOk()){ e.preventDefault(); ph.setAttribute("aria-invalid","true"); err.textContent="Укажите номер телефона, чтобы менеджер мог с вами связаться."; ph.focus(); return false; }
+      return true;
+    };
+    [nm,ph,tgu].forEach(i=>i.oninput=sync); sync();
+    wa.onclick = guard;
+    document.getElementById("lead").onsubmit = e=>{ if(guard(e)) wa.click(); e.preventDefault(); };
+    document.getElementById("back").onclick=()=>{ state.screen="q"; state.pos=state.flow.length-1; render(); };
+  }
+}
+render();
+</script>
+
+</body>
+</html>
