@@ -117,8 +117,7 @@ input{-webkit-appearance:none;appearance:none}
 /* ===== НАСТРОЙКИ: поменяйте под себя ===== */
 const CONFIG = {
   brand: "Travel Skills",
-  botToken: "8798687340:AAEfZSnZs-vqd28NL66BxUqnev9mQ70qYMQ",   // токен бота от @BotFather, например "1234567890:AA..."
-  chatId: "-5324192026",     // ID чата или группы, куда приходят заявки, например "-1001234567890"
+  scriptUrl: "https://script.google.com/macros/s/AKfycbx8EDg_ocL8cjhWmlHXppjtus1CQN6BGbqOzPCztQ-E8UyH2dzV1mD0KoJzPVjkCNgK/exec",   // ссылка веб-приложения Google Apps Script (заканчивается на /exec)
   phoneShown: "+998 88 042 40 04"
 };
 
@@ -207,18 +206,15 @@ function leadText(courseKey){
   return lines.join("\n");
 }
 
-async function sendLead(text){
-  if(!CONFIG.botToken || !CONFIG.chatId) throw new Error("not_configured");
-  const url = "https://api.telegram.org/bot" + CONFIG.botToken + "/sendMessage";
-  const body = new URLSearchParams({chat_id: CONFIG.chatId, text, disable_web_page_preview: "true"});
-  try{
-    const r = await fetch(url, {method:"POST", body});
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.description || "telegram_error");
-  }catch(e){
-    if(e instanceof TypeError){ await fetch(url, {method:"POST", body, mode:"no-cors"}); return; }
-    throw e;
-  }
+async function sendLead(text, courseKey){
+  if(!CONFIG.scriptUrl) throw new Error("not_configured");
+  const answers = state.flow.map(qi => QUESTIONS[qi].q.replace("?","") + ": " + QUESTIONS[qi].opts[state.answers[qi]].t).join("\n");
+  const payload = {
+    text, name: state.name.trim(), phone: state.phone.trim(), tg: tgClean(),
+    course: COURSES[courseKey].name, heat: ["холодный","тёплый","горячий"][heat()] || "",
+    answers, website: (document.getElementById("website")||{}).value || ""
+  };
+  await fetch(CONFIG.scriptUrl, {method:"POST", mode:"no-cors", body: new URLSearchParams({payload: JSON.stringify(payload)})});
 }
 
 function message(courseKey){
@@ -305,6 +301,7 @@ function render(){
         <div class="field"><label for="nm">Имя</label><input id="nm" type="text" autocomplete="given-name" placeholder="Ваше имя" value="${esc(state.name)}"></div>
         <div class="field"><label for="ph">Телефон</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" value="${esc(state.phone)}" required aria-describedby="err"></div>
         <div class="field"><label for="tgu">Telegram <span class="opt-label">(необязательно)</span></label><input id="tgu" type="text" autocomplete="off" autocapitalize="off" placeholder="@username" value="${esc(state.tg)}"></div>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
         <p class="err" id="err" role="alert"></p>
         <button class="btn btn-ink btn-send" id="send" type="submit">Отправить</button>
       </form>`;
@@ -320,7 +317,7 @@ function render(){
       if(!phoneOk()){ ph.setAttribute("aria-invalid","true"); err.textContent="Укажите номер телефона, чтобы менеджер мог с вами связаться."; ph.focus(); return; }
       send.disabled = true; send.textContent = "Отправляем…"; err.textContent = "";
       try{
-        await sendLead(leadText(k));
+        await sendLead(leadText(k), k);
         state.screen = "done"; render(); window.scrollTo(0,0);
       }catch(_){
         send.disabled = false; send.textContent = "Отправить";
