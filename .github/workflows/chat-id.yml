@@ -1,30 +1,20 @@
-name: find-telegram-chat-id
-# run 3
+name: telegram-test-lead
 on:
   push:
     paths: ['.github/workflows/chat-id.yml']
-  workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  find:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Read bot updates
-        run: |
-          B="https://api.telegram.org/bot8798687340:AAEfZSnZs-vqd28NL66BxUqnev9mQ70qYMQ"
-          curl -s "$B/getMe" | jq '{ok, bot: .result.username, privacy_off: .result.can_read_all_group_messages}' > tg-debug.json
-          curl -s "$B/getWebhookInfo" | jq '{webhook: .result.url, pending: .result.pending_update_count}' >> tg-debug.json
-          curl -s "$B/getUpdates" > raw.json
-          jq '{ok, count: (.result|length), description}' raw.json >> tg-debug.json
-          jq '[.result[] | (.message.chat // .my_chat_member.chat // .channel_post.chat // .edited_message.chat) | select(.!=null) | {id, type, title}] | unique' raw.json > chat-ids.json
-          rm raw.json
-          cat tg-debug.json chat-ids.json
-      - name: Save result
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git add chat-ids.json tg-debug.json
-          git commit -m "chat ids" || echo "nothing"
-          git push
+      - run: |
+          curl -s "https://api.telegram.org/bot8798687340:AAEfZSnZs-vqd28NL66BxUqnev9mQ70qYMQ/sendMessage" \
+            --data-urlencode "chat_id=-5324192026" \
+            --data-urlencode "text=Тест: квиз подключён. Сюда будут приходить заявки с сайта rasim1706.github.io/travel-skills_1" \
+            | jq '{ok, description}' > tg-debug.json
+          cat tg-debug.json
+          rm -f chat-ids.json
+          git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
+          git add -A; git commit -m "test lead result"; git push

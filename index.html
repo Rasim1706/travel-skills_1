@@ -77,6 +77,8 @@ input[aria-invalid="true"],input[aria-invalid="true"]:focus{border-color:var(--r
 .phone{font-weight:800;color:var(--ink);user-select:all}
 .toast{font-size:14px;color:var(--ground);font-weight:700;min-height:1.2em;margin:0}
 .btn-send{width:100%;font-size:18px;min-height:60px}
+.done{align-items:flex-start}
+.done-mark{width:64px;height:64px;border-radius:20px;background:var(--sun);display:grid;place-items:center}
 /* Intro fills the phone screen; the two choices sit in the thumb zone */
 .wrap[data-screen="intro"]{min-height:calc(100dvh - 52px)}
 .wrap[data-screen="intro"] .choice{margin-top:auto;padding-top:12px}
@@ -115,8 +117,8 @@ input{-webkit-appearance:none;appearance:none}
 /* ===== НАСТРОЙКИ: поменяйте под себя ===== */
 const CONFIG = {
   brand: "Travel Skills",
-  whatsapp: "998880424004",          // номер для WhatsApp, только цифры
-  telegram: "",                       // username в Telegram без @, например "travelskills_uz"; пусто = кнопка скрыта
+  botToken: "8798687340:AAEfZSnZs-vqd28NL66BxUqnev9mQ70qYMQ",   // токен бота от @BotFather, например "1234567890:AA..."
+  chatId: "-5324192026",     // ID чата или группы, куда приходят заявки, например "-1001234567890"
   phoneShown: "+998 88 042 40 04"
 };
 
@@ -187,6 +189,37 @@ function heat(){ const o = QUESTIONS[3].opts[state.answers[3]]; return o ? o.hot
 function cleanPhone(p){ return p.replace(/[^\d+]/g,""); }
 function phoneOk(){ return cleanPhone(state.phone).replace(/\D/g,"").length >= 9; }
 function tgClean(){ const t = state.tg.trim().replace(/^https?:\/\/t\.me\//i,"").replace(/^@/,""); return t ? "@"+t : ""; }
+
+function leadText(courseKey){
+  const when = new Date().toLocaleString("ru-RU",{timeZone:"Asia/Tashkent",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  const hot = ["холодный","тёплый","горячий"][heat()] || "—";
+  const lines = [
+    "Новая заявка из квиза · " + when,
+    "",
+    "Имя: " + (state.name.trim() || "—"),
+    "Телефон: " + (state.phone.trim() || "—"),
+    "Telegram: " + (tgClean() || "—"),
+    (state.picked ? "Выбрал курс: " : "Квиз подобрал курс: ") + COURSES[courseKey].name,
+    "Клиент: " + hot,
+    ""
+  ];
+  for(const qi of state.flow) lines.push(QUESTIONS[qi].q.replace("?","") + ": " + QUESTIONS[qi].opts[state.answers[qi]].t);
+  return lines.join("\n");
+}
+
+async function sendLead(text){
+  if(!CONFIG.botToken || !CONFIG.chatId) throw new Error("not_configured");
+  const url = "https://api.telegram.org/bot" + CONFIG.botToken + "/sendMessage";
+  const body = new URLSearchParams({chat_id: CONFIG.chatId, text, disable_web_page_preview: "true"});
+  try{
+    const r = await fetch(url, {method:"POST", body});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.description || "telegram_error");
+  }catch(e){
+    if(e instanceof TypeError){ await fetch(url, {method:"POST", body, mode:"no-cors"}); return; }
+    throw e;
+  }
+}
 
 function message(courseKey){
   const lines = [
@@ -273,24 +306,39 @@ function render(){
         <div class="field"><label for="ph">Телефон</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" value="${esc(state.phone)}" required aria-describedby="err"></div>
         <div class="field"><label for="tgu">Telegram <span class="opt-label">(необязательно)</span></label><input id="tgu" type="text" autocomplete="off" autocapitalize="off" placeholder="@username" value="${esc(state.tg)}"></div>
         <p class="err" id="err" role="alert"></p>
-        <a class="btn btn-ink btn-send" id="wa" href="#" target="_blank" rel="noopener">Отправить</a>
+        <button class="btn btn-ink btn-send" id="send" type="submit">Отправить</button>
       </form>`;
     const nm = document.getElementById("nm"), ph = document.getElementById("ph"), tgu = document.getElementById("tgu");
-    const wa = document.getElementById("wa"), err = document.getElementById("err");
+    const send = document.getElementById("send"), err = document.getElementById("err");
     const sync = ()=>{
       state.name = nm.value; state.phone = ph.value; state.tg = tgu.value;
-      wa.href = "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(message(k));
       if(phoneOk()){ ph.removeAttribute("aria-invalid"); err.textContent=""; }
     };
-    const guard = e=>{
-      sync();
-      if(!phoneOk()){ e.preventDefault(); ph.setAttribute("aria-invalid","true"); err.textContent="Укажите номер телефона, чтобы менеджер мог с вами связаться."; ph.focus(); return false; }
-      return true;
-    };
     [nm,ph,tgu].forEach(i=>i.oninput=sync); sync();
-    wa.onclick = guard;
-    document.getElementById("lead").onsubmit = e=>{ if(guard(e)) wa.click(); e.preventDefault(); };
+    document.getElementById("lead").onsubmit = async e=>{
+      e.preventDefault(); sync();
+      if(!phoneOk()){ ph.setAttribute("aria-invalid","true"); err.textContent="Укажите номер телефона, чтобы менеджер мог с вами связаться."; ph.focus(); return; }
+      send.disabled = true; send.textContent = "Отправляем…"; err.textContent = "";
+      try{
+        await sendLead(leadText(k));
+        state.screen = "done"; render(); window.scrollTo(0,0);
+      }catch(_){
+        send.disabled = false; send.textContent = "Отправить";
+        err.textContent = "Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз или позвоните: " + CONFIG.phoneShown;
+      }
+    };
     document.getElementById("back").onclick=()=>{ state.screen="q"; state.pos=state.flow.length-1; render(); };
+    return;
+  }
+  if(state.screen==="done"){
+    const c = COURSES[score()];
+    app.innerHTML = `${headerBar("Готово", 100)}
+      <div class="card done">
+        <div class="done-mark" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#14163A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></div>
+        <h2>Спасибо${state.name.trim() ? ", " + esc(state.name.trim()) : ""}! Заявка отправлена</h2>
+        <p class="hint" style="margin:0">Менеджер свяжется с вами в ближайшее время и расскажет о курсе «${esc(c.name)}»: программу, стоимость и ближайшую группу.</p>
+        <p class="small">Если удобнее, позвоните сами: <span class="phone">${esc(CONFIG.phoneShown)}</span></p>
+      </div>`;
   }
 }
 render();
