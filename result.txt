@@ -1,0 +1,2 @@
+200
+{"url_set":true,"pending":2,"last_error":"Wrong response from the webhook: 302 Found"}
