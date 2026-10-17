@@ -6,6 +6,23 @@
 <meta name="theme-color" content="#3B3FF2">
 <title>Профессия в туризме</title>
 <meta name="description" content="Пройдите квиз за 1 минуту и узнайте, какой курс в туризме подходит именно вам.">
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1427686728731155');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1427686728731155&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap">
@@ -160,6 +177,8 @@ const QUESTIONS = [
   ]}
 ];
 
+function px(type, name, data){ try{ if(window.fbq) window.fbq(type, name, data||{}); }catch(_){} }
+
 let state = {screen:"intro", flow:[], pos:0, answers:{}, picked:null, name:"", phone:"", tg:""};
 const app = document.getElementById("app");
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -241,8 +260,8 @@ function render(){
         <button class="btn btn-sun" id="dunno" type="button">Не знаю, помогите выбрать</button>
         <button class="btn btn-ghost" id="know" type="button">Знаю, какой курс хочу</button>
       </div>`;
-    document.getElementById("dunno").onclick = ()=>{ state.picked=null; state.flow=[0,1,2,3,4]; state.pos=0; state.screen="q"; render(); };
-    document.getElementById("know").onclick = ()=>{ state.screen="pick"; render(); };
+    document.getElementById("dunno").onclick = ()=>{ px("trackCustom","QuizStart",{path:"dont_know"}); state.picked=null; state.flow=[0,1,2,3,4]; state.pos=0; state.screen="q"; render(); };
+    document.getElementById("know").onclick = ()=>{ px("trackCustom","QuizStart",{path:"know_course"}); state.screen="pick"; render(); };
     return;
   }
   if(state.screen==="pick"){
@@ -288,6 +307,7 @@ function render(){
   }
   if(state.screen==="result"){
     const k = score(), c = COURSES[k], h = heat();
+    px("trackCustom","QuizComplete",{content_name:c.name});
     const tag = h===2 ? "Подходит ближайшая группа" : h===1 ? "Забронируйте место заранее" : "Начните с консультации";
     app.innerHTML = `${headerBar("Последний шаг", 100)}
       <button class="back" id="back" type="button">← Изменить ответы</button>
@@ -318,6 +338,7 @@ function render(){
       send.disabled = true; send.textContent = "Отправляем…"; err.textContent = "";
       try{
         await sendLead(leadText(k), k);
+        px("track","Lead",{content_name: COURSES[k].name, content_category: ["холодный","тёплый","горячий"][heat()] || ""});
         state.screen = "done"; render(); window.scrollTo(0,0);
       }catch(_){
         send.disabled = false; send.textContent = "Отправить";
